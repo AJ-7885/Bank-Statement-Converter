@@ -31,8 +31,6 @@ jobs:
       - name: Build Next.js app
         run: pnpm run build
 
-      - name: Export static site
-        run: pnpm exec next export
 
       - name: Deploy to gh-page branch
         uses: peaceiris/actions-gh-pages@v4
