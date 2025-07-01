@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, FileText, AlertCircle, Info, CheckCircle } from "lucide-react";
+import { Upload, AlertCircle, CheckCircle } from "lucide-react";
 
 import { bankConfigs } from "../config/bank-configs";
 import {
@@ -33,8 +33,9 @@ import { ProcessingMonitor } from "../components/processing-monitor";
 import { ConversionSummary } from "../components/conversion-summary";
 import { DataTable } from "../components/data-table";
 import { CSVPreview } from "../components/csv-preview";
-import { ColumnMappingDebug } from "../components/column-mapping-debug";
 import { ProcessingSummary } from "../components/processing-summary";
+import { BankSpecificInfo } from "../components/bank-specific-info";
+import { AmexDebugPreview } from "../components/amex-debug-preview";
 
 import type { ProcessingStep, ConversionResult } from "../types";
 
@@ -52,48 +53,149 @@ export default function BankStatementConverter() {
 
   const initializeSteps = (bankKey: string): ProcessingStep[] => {
     const config = bankConfigs[bankKey];
-    return [
-      {
-        step: 1,
-        description: `Parse CSV with detected separator`,
-        status: "pending",
-      },
-      {
-        step: 2,
-        description: `Remove first ${config.skipRows} header rows`,
-        status: "pending",
-      },
-      {
-        step: 3,
-        description: "Convert date formats to YYYY-MM-DD",
-        status: "pending",
-      },
-      {
-        step: 4,
-        description: "Merge description columns (C to O)",
-        status: "pending",
-      },
-      {
-        step: 5,
-        description: "Map Column P(15) → D-Unit, Column Q(16) → C-Unit",
-        status: "pending",
-      },
-      {
-        step: 6,
-        description: "Remove last row(s) if needed",
-        status: "pending",
-      },
-      {
-        step: 7,
-        description: "Sort transactions by date (oldest to newest)",
-        status: "pending",
-      },
-      {
-        step: 8,
-        description: "Generate standardized CSV format",
-        status: "pending",
-      },
-    ];
+    const bankSpecificSteps = {
+      postbank: [
+        {
+          step: 1,
+          description: `Parse CSV with detected separator`,
+          status: "pending" as const,
+        },
+        {
+          step: 2,
+          description: `Remove first ${config.skipRows} header rows`,
+          status: "pending" as const,
+        },
+        {
+          step: 3,
+          description: "Convert date formats to YYYY-MM-DD",
+          status: "pending" as const,
+        },
+        {
+          step: 4,
+          description: "Merge description columns (C to O)",
+          status: "pending" as const,
+        },
+        {
+          step: 5,
+          description: "Map Column P(15) → D-Unit, Column Q(16) → C-Unit",
+          status: "pending" as const,
+        },
+        {
+          step: 6,
+          description: "Remove last row(s) if needed",
+          status: "pending" as const,
+        },
+        {
+          step: 7,
+          description: "Sort transactions by date (oldest to newest)",
+          status: "pending" as const,
+        },
+        {
+          step: 8,
+          description: "Generate standardized CSV format",
+          status: "pending" as const,
+        },
+      ],
+      amex: [
+        {
+          step: 1,
+          description: `Parse CSV with detected separator`,
+          status: "pending" as const,
+        },
+        {
+          step: 2,
+          description: `Remove first ${config.skipRows} header rows`,
+          status: "pending" as const,
+        },
+        {
+          step: 3,
+          description: "Convert date from Column A to YYYY-MM-DD",
+          status: "pending" as const,
+        },
+        {
+          step: 4,
+          description: "Merge description columns G + H",
+          status: "pending" as const,
+        },
+        {
+          step: 5,
+          description: "Process Column E: Negative → C-Unit, Positive → D-Unit",
+          status: "pending" as const,
+        },
+        {
+          step: 6,
+          description: "Sort transactions by date (oldest to newest)",
+          status: "pending" as const,
+        },
+        {
+          step: 7,
+          description: "Generate standardized CSV format",
+          status: "pending" as const,
+        },
+      ],
+      revolut: [
+        {
+          step: 1,
+          description: `Parse CSV with detected separator`,
+          status: "pending" as const,
+        },
+        {
+          step: 2,
+          description: `Remove first ${config.skipRows} header rows`,
+          status: "pending" as const,
+        },
+        {
+          step: 3,
+          description: "Extract date from Column C (remove time)",
+          status: "pending" as const,
+        },
+        {
+          step: 4,
+          description: "Use Column E for description",
+          status: "pending" as const,
+        },
+        {
+          step: 5,
+          description: "Process Column F: Positive → C-Unit, Negative → D-Unit",
+          status: "pending" as const,
+        },
+        {
+          step: 6,
+          description: "Sort transactions by date (oldest to newest)",
+          status: "pending" as const,
+        },
+        {
+          step: 7,
+          description: "Generate standardized CSV format",
+          status: "pending" as const,
+        },
+      ],
+    };
+
+    return (
+      bankSpecificSteps[bankKey as keyof typeof bankSpecificSteps] || [
+        {
+          step: 1,
+          description: `Parse CSV with detected separator`,
+          status: "pending" as const,
+        },
+        {
+          step: 2,
+          description: `Remove first ${config.skipRows} header rows`,
+          status: "pending" as const,
+        },
+        {
+          step: 3,
+          description: "Process transactions",
+          status: "pending" as const,
+        },
+        {
+          step: 4,
+          description: "Generate standardized CSV format",
+          status: "pending" as const,
+        },
+      ]
+    );
   };
 
   const updateStep = (
@@ -161,60 +263,34 @@ export default function BankStatementConverter() {
       // Step 2: Remove header rows
       updateStep(2, "processing");
       const dataWithoutHeaders = csvData.slice(config.skipRows);
-      setInputRowCount(dataWithoutHeaders.length); // Track input row count
+      setInputRowCount(dataWithoutHeaders.length);
       updateStep(
         2,
         "completed",
         `Removed ${config.skipRows} header rows, ${dataWithoutHeaders.length} data rows remaining`
       );
 
-      // Step 6: Remove last rows if needed
-      updateStep(6, "processing");
+      // Remove last rows if needed (mainly for Postbank)
       const cleanedData =
         config.removeLastRows > 0
           ? dataWithoutHeaders.slice(0, -config.removeLastRows)
           : dataWithoutHeaders;
-      updateStep(
-        6,
-        "completed",
-        config.removeLastRows > 0
-          ? `Removed ${config.removeLastRows} footer rows`
-          : "No footer rows to remove"
-      );
 
-      // Steps 3-5: Process data using bank-specific processor
-      updateStep(3, "processing");
-      updateStep(4, "processing");
-      updateStep(5, "processing");
+      // Process data using bank-specific processor
+      const nextStep =
+        selectedBank === "postbank" ? 3 : selectedBank === "amex" ? 3 : 3;
+      updateStep(nextStep, "processing");
 
       const processedData = config.processor(cleanedData, config);
 
-      updateStep(
-        3,
-        "completed",
-        `Converted ${processedData.length} dates to YYYY-MM-DD format`
-      );
-      updateStep(4, "completed", "Merged description columns");
+      // Update remaining steps
+      const totalSteps = steps.length;
+      for (let i = nextStep; i < totalSteps - 1; i++) {
+        updateStep(i, "completed");
+      }
 
-      // Count D-Unit and C-Unit entries
-      const debitCount = processedData.filter(
-        (t) => t.debitUnit !== null && t.debitUnit > 0
-      ).length;
-      const creditCount = processedData.filter(
-        (t) => t.creditUnit !== null && t.creditUnit > 0
-      ).length;
-      updateStep(
-        5,
-        "completed",
-        `Mapped amounts: ${debitCount} D-Unit, ${creditCount} C-Unit`
-      );
-
-      // Step 7: Sort by date (already done in processor)
-      updateStep(7, "processing");
-      updateStep(7, "completed", "Sorted transactions chronologically");
-
-      // Step 8: Generate result
-      updateStep(8, "processing");
+      // Final step
+      updateStep(totalSteps - 1, "processing");
 
       if (processedData.length === 0) {
         throw new Error("No valid transactions found in the file");
@@ -252,7 +328,7 @@ export default function BankStatementConverter() {
 
       setConversionResult(result);
       updateStep(
-        8,
+        totalSteps - 1,
         "completed",
         `Generated CSV with ${processedData.length} transactions`
       );
@@ -261,7 +337,6 @@ export default function BankStatementConverter() {
         error instanceof Error ? error.message : "Unknown error occurred";
       setError(errorMessage);
 
-      // Mark current processing step as error
       setProcessingSteps((prev) =>
         prev.map((step) =>
           step.status === "processing"
@@ -347,16 +422,6 @@ export default function BankStatementConverter() {
                 </div>
               </div>
 
-              {selectedBank && (
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>{bankConfigs[selectedBank].name}</strong> format
-                    selected. Will track all processing steps and row counts.
-                  </AlertDescription>
-                </Alert>
-              )}
-
               <Button
                 onClick={processFile}
                 disabled={!file || !selectedBank || isProcessing}
@@ -386,48 +451,9 @@ export default function BankStatementConverter() {
           </Card>
         </div>
 
-        {/* Format Info */}
+        {/* Bank-Specific Info */}
         <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Processing Info
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-medium">Input Rows:</span>
-                  <span className="text-gray-600">
-                    {inputRowCount || "Not processed"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Output Transactions:</span>
-                  <span className="text-gray-600">
-                    {conversionResult?.data.length || "Not processed"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Difference:</span>
-                  <span
-                    className={`${
-                      inputRowCount && conversionResult
-                        ? inputRowCount !== conversionResult.data.length
-                          ? "text-red-600 font-medium"
-                          : "text-green-600"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    {inputRowCount && conversionResult
-                      ? inputRowCount - conversionResult.data.length
-                      : "N/A"}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <BankSpecificInfo selectedBank={selectedBank} />
         </div>
       </div>
 
@@ -437,7 +463,7 @@ export default function BankStatementConverter() {
           <ProcessingSummary
             inputRows={inputRowCount}
             outputRows={conversionResult.data.length}
-            skippedRows={[]} // Will be populated from processor logs
+            skippedRows={[]}
             errors={[]}
           />
         </div>
@@ -450,15 +476,17 @@ export default function BankStatementConverter() {
         </div>
       )}
 
-      {/* Column Mapping Debug */}
-      {rawData.length > 0 && conversionResult?.data && (
-        <div className="mb-8">
-          <ColumnMappingDebug
-            rawData={rawData}
-            processedData={conversionResult.data}
-          />
-        </div>
-      )}
+      {/* Amex-Specific Debug */}
+      {selectedBank === "amex" &&
+        rawData.length > 0 &&
+        conversionResult?.data && (
+          <div className="mb-8">
+            <AmexDebugPreview
+              rawData={rawData}
+              processedData={conversionResult.data}
+            />
+          </div>
+        )}
 
       {/* Processing Steps */}
       {processingSteps.length > 0 && (
