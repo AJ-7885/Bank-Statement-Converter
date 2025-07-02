@@ -1,21 +1,36 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Download, Eye } from "lucide-react"
-import type { StandardizedTransaction } from "../types/bank-statement"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Download, Eye } from "lucide-react";
+import type { StandardizedTransaction } from "../types/bank-statement";
 
 interface DataPreviewProps {
-  data: StandardizedTransaction[]
-  onDownload: () => void
+  data: StandardizedTransaction[];
+  onDownload: () => void;
 }
 
 export function DataPreview({ data, onDownload }: DataPreviewProps) {
-  if (data.length === 0) return null
+  if (data.length === 0) return null;
 
-  const totalDebits = data.reduce((sum, row) => sum + (row.debitUnit && row.debitUnit > 0 ? row.debitUnit : 0), 0)
-  const totalCredits = data.reduce((sum, row) => sum + (row.creditUnit && row.creditUnit > 0 ? row.creditUnit : 0), 0)
+  const totalDebits = data.reduce(
+    (sum, row) =>
+      sum + (row.debitUnit && row.debitUnit > 0 ? row.debitUnit : 0),
+    0,
+  );
+  const totalCredits = data.reduce(
+    (sum, row) =>
+      sum + (row.creditUnit && row.creditUnit > 0 ? row.creditUnit : 0),
+    0,
+  );
 
   return (
     <Card>
@@ -34,16 +49,24 @@ export function DataPreview({ data, onDownload }: DataPreviewProps) {
       <CardContent>
         <div className="mb-4 grid grid-cols-3 gap-4 text-sm">
           <div className="bg-blue-50 p-3 rounded">
-            <div className="font-semibold text-blue-700">Total Transactions</div>
-            <div className="text-2xl font-bold text-blue-900">{data.length}</div>
+            <div className="font-semibold text-blue-700">
+              Total Transactions
+            </div>
+            <div className="text-2xl font-bold text-blue-900">
+              {data.length}
+            </div>
           </div>
           <div className="bg-red-50 p-3 rounded">
             <div className="font-semibold text-red-700">Total Debits</div>
-            <div className="text-2xl font-bold text-red-900">€{totalDebits.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-red-900">
+              €{totalDebits.toFixed(2)}
+            </div>
           </div>
           <div className="bg-green-50 p-3 rounded">
             <div className="font-semibold text-green-700">Total Credits</div>
-            <div className="text-2xl font-bold text-green-900">€{totalCredits.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-green-900">
+              €{totalCredits.toFixed(2)}
+            </div>
           </div>
         </div>
 
@@ -52,9 +75,15 @@ export function DataPreview({ data, onDownload }: DataPreviewProps) {
             <TableHeader>
               <TableRow>
                 <TableHead className="sticky top-0 bg-white">Date</TableHead>
-                <TableHead className="sticky top-0 bg-white">Category</TableHead>
-                <TableHead className="sticky top-0 bg-white">Description</TableHead>
-                <TableHead className="sticky top-0 bg-white">Reference No.</TableHead>
+                <TableHead className="sticky top-0 bg-white">
+                  Category
+                </TableHead>
+                <TableHead className="sticky top-0 bg-white">
+                  Description
+                </TableHead>
+                <TableHead className="sticky top-0 bg-white">
+                  Reference No.
+                </TableHead>
                 <TableHead className="sticky top-0 bg-white">QTY</TableHead>
                 <TableHead className="sticky top-0 bg-white">D- Unit</TableHead>
                 <TableHead className="sticky top-0 bg-white">C- Unit</TableHead>
@@ -63,7 +92,9 @@ export function DataPreview({ data, onDownload }: DataPreviewProps) {
             <TableBody>
               {data.slice(0, 50).map((row, index) => (
                 <TableRow key={index}>
-                  <TableCell className="font-mono text-sm">{row.date}</TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {row.date}
+                  </TableCell>
                   <TableCell>{row.category || "NULL"}</TableCell>
                   <TableCell className="max-w-xs">
                     <div className="truncate" title={row.description}>
@@ -73,10 +104,14 @@ export function DataPreview({ data, onDownload }: DataPreviewProps) {
                   <TableCell>{row.referenceNo || "NULL"}</TableCell>
                   <TableCell>{row.qty || "NULL"}</TableCell>
                   <TableCell className="text-right font-mono">
-                    {row.debitUnit !== null && row.debitUnit > 0 ? `€${row.debitUnit.toFixed(2)}` : ""}
+                    {row.debitUnit !== null && row.debitUnit > 0
+                      ? `€${row.debitUnit.toFixed(2)}`
+                      : ""}
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    {row.creditUnit !== null && row.creditUnit > 0 ? `€${row.creditUnit.toFixed(2)}` : ""}
+                    {row.creditUnit !== null && row.creditUnit > 0
+                      ? `€${row.creditUnit.toFixed(2)}`
+                      : ""}
                   </TableCell>
                 </TableRow>
               ))}
@@ -86,10 +121,11 @@ export function DataPreview({ data, onDownload }: DataPreviewProps) {
 
         {data.length > 50 && (
           <p className="text-sm text-muted-foreground mt-2 text-center">
-            Showing first 50 rows. Download CSV to see all {data.length} transactions.
+            Showing first 50 rows. Download CSV to see all {data.length}{" "}
+            transactions.
           </p>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -205,12 +205,12 @@ export default function BankStatementConverter() {
   const updateStep = (
     stepNumber: number,
     status: ProcessingStep["status"],
-    details?: string
+    details?: string,
   ) => {
     setProcessingSteps((prev) =>
       prev.map((step) =>
-        step.step === stepNumber ? { ...step, status, details } : step
-      )
+        step.step === stepNumber ? { ...step, status, details } : step,
+      ),
     );
   };
 
@@ -263,12 +263,12 @@ export default function BankStatementConverter() {
       updateStep(
         1,
         "completed",
-        `Detected "${separator}" separator, parsed ${csvData.length} rows`
+        `Detected "${separator}" separator, parsed ${csvData.length} rows`,
       );
 
       if (csvData.length <= config.skipRows) {
         throw new Error(
-          `File has insufficient data. Expected more than ${config.skipRows} rows, got ${csvData.length}`
+          `File has insufficient data. Expected more than ${config.skipRows} rows, got ${csvData.length}`,
         );
       }
 
@@ -279,7 +279,7 @@ export default function BankStatementConverter() {
       updateStep(
         2,
         "completed",
-        `Removed ${config.skipRows} header rows, ${dataWithoutHeaders.length} data rows remaining`
+        `Removed ${config.skipRows} header rows, ${dataWithoutHeaders.length} data rows remaining`,
       );
 
       // Remove last rows if needed (mainly for Postbank)
@@ -295,7 +295,7 @@ export default function BankStatementConverter() {
       updateStep(nextStep, "processing");
 
       console.log(
-        `Processing ${cleanedData.length} rows with ${selectedBank} processor...`
+        `Processing ${cleanedData.length} rows with ${selectedBank} processor...`,
       );
       const processedData = config.processor(cleanedData, config);
 
@@ -315,11 +315,11 @@ export default function BankStatementConverter() {
       // Calculate summary
       const totalDebits = processedData.reduce(
         (sum, t) => sum + (t.debitUnit || 0),
-        0
+        0,
       );
       const totalCredits = processedData.reduce(
         (sum, t) => sum + (t.creditUnit || 0),
-        0
+        0,
       );
       const dates = processedData
         .map((t) => t.date)
@@ -346,7 +346,7 @@ export default function BankStatementConverter() {
       updateStep(
         totalSteps - 1,
         "completed",
-        `Generated CSV with ${processedData.length} transactions`
+        `Generated CSV with ${processedData.length} transactions`,
       );
 
       console.log(`\n=== FINAL PROCESSING SUMMARY ===`);
@@ -354,8 +354,8 @@ export default function BankStatementConverter() {
       console.log(`Output transactions: ${processedData.length}`);
       console.log(
         `Success rate: ${((processedData.length / inputRowCount) * 100).toFixed(
-          1
-        )}%`
+          1,
+        )}%`,
       );
     } catch (error) {
       const errorMessage =
@@ -366,8 +366,8 @@ export default function BankStatementConverter() {
         prev.map((step) =>
           step.status === "processing"
             ? { ...step, status: "error", details: errorMessage }
-            : step
-        )
+            : step,
+        ),
       );
     } finally {
       setIsProcessing(false);

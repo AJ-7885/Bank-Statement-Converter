@@ -256,10 +256,10 @@ export default function LandingPage() {
                         bank.complexity === "Simple"
                           ? "default"
                           : bank.complexity === "Medium"
-                          ? "secondary"
-                          : bank.complexity === "Advanced"
-                          ? "outline"
-                          : "destructive"
+                            ? "secondary"
+                            : bank.complexity === "Advanced"
+                              ? "outline"
+                              : "destructive"
                       }
                     >
                       {bank.complexity}

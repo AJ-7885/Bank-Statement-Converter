@@ -1,49 +1,57 @@
 export function parseCSV(text: string): string[][] {
-  const lines = text.split("\n")
-  const result: string[][] = []
+  const lines = text.split("\n");
+  const result: string[][] = [];
 
   for (const line of lines) {
-    if (line.trim() === "") continue
+    if (line.trim() === "") continue;
 
-    const row: string[] = []
-    let current = ""
-    let inQuotes = false
-    let i = 0
+    const row: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    let i = 0;
 
     while (i < line.length) {
-      const char = line[i]
-      const nextChar = line[i + 1]
+      const char = line[i];
+      const nextChar = line[i + 1];
 
       if (char === '"') {
         if (inQuotes && nextChar === '"') {
           // Escaped quote
-          current += '"'
-          i += 2
-          continue
+          current += '"';
+          i += 2;
+          continue;
         } else {
           // Toggle quote state
-          inQuotes = !inQuotes
+          inQuotes = !inQuotes;
         }
       } else if (char === "," && !inQuotes) {
-        row.push(current.trim())
-        current = ""
+        row.push(current.trim());
+        current = "";
       } else {
-        current += char
+        current += char;
       }
-      i++
+      i++;
     }
 
-    row.push(current.trim())
-    result.push(row)
+    row.push(current.trim());
+    result.push(row);
   }
 
-  return result
+  return result;
 }
 
 export function convertToCSV(data: any[]): string {
-  const headers = ["Date", "Category", "Description", "Reference No.", "QTY", "D- Unit", "C- Unit"]
+  const headers = [
+    "Date",
+    "Category",
+    "Description",
+    "Reference No.",
+    "QTY",
+    "D- Unit",
+    "C- Unit",
+  ];
 
-  const csvRows = [headers]
+  const csvRows = [headers];
 
   data.forEach((row) => {
     const csvRow = [
@@ -54,9 +62,9 @@ export function convertToCSV(data: any[]): string {
       row.qty || "",
       row.debitUnit?.toString() || "",
       row.creditUnit?.toString() || "",
-    ]
-    csvRows.push(csvRow)
-  })
+    ];
+    csvRows.push(csvRow);
+  });
 
-  return csvRows.map((row) => row.join(",")).join("\n")
+  return csvRows.map((row) => row.join(",")).join("\n");
 }

@@ -13,17 +13,20 @@ A powerful React-based web application that converts bank statements from multip
 ## ✨ Features
 
 ### 🔄 Multi-Bank Support
+
 - Bank-specific processing logic for accurate data conversion
 - Automatic format detection and validation
 - Custom date format handling for each bank
 
 ### 📊 Data Processing
+
 - **Date Standardization**: Converts various date formats to YYYY-MM-DD
 - **Amount Categorization**: Separates debits and credits correctly
 - **Description Merging**: Combines multiple description fields intelligently
 - **European Number Formats**: Handles comma decimal separators (1.234,56)
 
 ### 🛠️ Advanced Features
+
 - **CSV Structure Analysis**: Preview and analyze your input files
 - **Column Mapping Debug**: Visual representation of data extraction
 - **Processing Steps Monitor**: Real-time conversion progress
@@ -31,6 +34,7 @@ A powerful React-based web application that converts bank statements from multip
 - **Data Validation**: Ensures data integrity throughout conversion
 
 ### 📈 Analytics & Debugging
+
 - **Processing Summary**: Success rates and data loss analysis
 - **Row Count Tracking**: Input vs output comparison
 - **Bank-Specific Info**: Processing rules for each bank
@@ -39,7 +43,8 @@ A powerful React-based web application that converts bank statements from multip
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - Modern web browser with JavaScript enabled
 
 ### Installation
@@ -86,16 +91,18 @@ A powerful React-based web application that converts bank statements from multip
 ### Bank-Specific Instructions
 
 #### 🔵 Postbank
+
 - **Input Format**: German CSV with semicolon separators
 - **Date Format**: D.M.YYYY (e.g., 2.5.2025)
 - **Processing**: Skips 8 header rows, removes 1 footer row
-- **Columns**: 
+- **Columns**:
   - Date: Column A
   - Description: Columns C-O (merged)
   - D-Unit: Column P
   - C-Unit: Column Q
 
 #### 🔴 American Express
+
 - **Input Format**: German Amex activity export
 - **Date Format**: DD/MM/YYYY (e.g., 02/01/2025)
 - **Processing**: Handles European number formats
@@ -105,6 +112,7 @@ A powerful React-based web application that converts bank statements from multip
   - Amount: Column E (Betrag) - Positive→C-Unit, Negative→D-Unit
 
 #### 🟣 Revolut
+
 - **Input Format**: Standard Revolut CSV export
 - **Date Format**: YYYY-MM-DD with time (time removed)
 - **Processing**: Extracts date portion only
@@ -117,25 +125,27 @@ A powerful React-based web application that converts bank statements from multip
 
 The standardized CSV output contains these columns:
 
-| Column | Description | Example |
-|--------|-------------|---------|
-| Date | YYYY-MM-DD format | 2025-01-15 |
-| Category | Transaction category | (empty) |
-| Description | Transaction description | "ROSSMANN BERLIN" |
-| Reference No. | Reference number | (empty) |
-| QTY | Quantity | (empty) |
-| D- Unit | Debit amount (money in) | 1250.00 |
-| C- Unit | Credit amount (money out) | 45.67 |
+| Column        | Description               | Example           |
+| ------------- | ------------------------- | ----------------- |
+| Date          | YYYY-MM-DD format         | 2025-01-15        |
+| Category      | Transaction category      | (empty)           |
+| Description   | Transaction description   | "ROSSMANN BERLIN" |
+| Reference No. | Reference number          | (empty)           |
+| QTY           | Quantity                  | (empty)           |
+| D- Unit       | Debit amount (money in)   | 1250.00           |
+| C- Unit       | Credit amount (money out) | 45.67             |
 
 ## 🔧 Technical Details
 
 ### Architecture
+
 - **Frontend**: React 18 with TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **Processing**: Client-side CSV parsing and conversion
 - **State Management**: React hooks (useState, useEffect)
 
 ### Key Components
+
 - **Bank Processors**: Custom logic for each bank format
 - **CSV Parser**: Handles various separators and encodings
 - **Date Converter**: Multi-format date parsing
@@ -143,6 +153,7 @@ The standardized CSV output contains these columns:
 - **Validation Engine**: Data integrity checks
 
 ### Processing Pipeline
+
 1. **File Upload** → CSV parsing with separator detection
 2. **Header Removal** → Bank-specific row skipping
 3. **Data Processing** → Date conversion, description merging
@@ -155,21 +166,25 @@ The standardized CSV output contains these columns:
 ### Common Issues
 
 #### Low Processing Success Rate
+
 - **Cause**: Date format mismatch or strict validation
 - **Solution**: Check Column Mapping Analysis section
 - **Debug**: Enable browser console for detailed logs
 
 #### Missing Transactions
+
 - **Cause**: Empty required fields or parsing errors
 - **Solution**: Review CSV Structure Preview
 - **Fix**: Ensure proper file encoding (UTF-8)
 
 #### Date Conversion Errors
+
 - **Cause**: Unexpected date format in source file
 - **Solution**: Verify bank-specific date format requirements
 - **Workaround**: Manual date format adjustment
 
 #### Amount Categorization Issues
+
 - **Cause**: Incorrect positive/negative detection
 - **Solution**: Check bank-specific amount processing rules
 - **Debug**: Review Processing Steps for amount mapping
@@ -185,6 +200,7 @@ The standardized CSV output contains these columns:
 ## 🤝 Contributing
 
 ### Development Setup
+
 1. Fork the repository
 2. Create a feature branch: \`git checkout -b feature-name\`
 3. Make your changes
@@ -192,6 +208,7 @@ The standardized CSV output contains these columns:
 5. Submit a pull request
 
 ### Adding New Banks
+
 1. Create processor in \`processors/[bank]-processor.ts\`
 2. Add configuration to \`config/bank-configs.ts\`
 3. Update bank selection dropdown
@@ -199,6 +216,7 @@ The standardized CSV output contains these columns:
 5. Test with real bank data
 
 ### Code Style
+
 - TypeScript for type safety
 - ESLint + Prettier for formatting
 - Functional components with hooks
@@ -211,12 +229,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🆘 Support
 
 ### Getting Help
+
 - **Issues**: Create a GitHub issue with detailed description
 - **Questions**: Check existing issues or start a discussion
 - **Bug Reports**: Include sample data (anonymized) and error logs
 
 ### Reporting Bugs
+
 Please include:
+
 - Bank type and file format
 - Input/output row counts
 - Browser console errors
@@ -225,6 +246,7 @@ Please include:
 ## 🔄 Version History
 
 ### Latest Version
+
 - ✅ Fixed American Express row count mismatch
 - ✅ Enhanced date conversion for German formats
 - ✅ Improved error handling and recovery
@@ -232,6 +254,7 @@ Please include:
 - ✅ Column mapping analysis restoration
 
 ### Previous Versions
+
 - Multi-bank support implementation
 - Processing steps monitoring
 - CSV structure analysis
@@ -240,6 +263,7 @@ Please include:
 ## 🎯 Roadmap
 
 ### Upcoming Features
+
 - [ ] Additional bank support (Deutsche Bank, Commerzbank)
 - [ ] Batch file processing
 - [ ] Custom column mapping interface
@@ -248,6 +272,7 @@ Please include:
 - [ ] Data validation presets
 
 ### Performance Improvements
+
 - [ ] Large file handling optimization
 - [ ] Memory usage optimization
 - [ ] Processing speed enhancements

@@ -124,7 +124,7 @@ export function ColumnMappingDebug({
               <div className="text-xl font-bold">
                 {
                   processedData.filter(
-                    (t) => t.debitUnit !== null && t.debitUnit > 0
+                    (t) => t.debitUnit !== null && t.debitUnit > 0,
                   ).length
                 }
               </div>
@@ -134,7 +134,7 @@ export function ColumnMappingDebug({
               <div className="text-xl font-bold">
                 {
                   processedData.filter(
-                    (t) => t.creditUnit !== null && t.creditUnit > 0
+                    (t) => t.creditUnit !== null && t.creditUnit > 0,
                   ).length
                 }
               </div>

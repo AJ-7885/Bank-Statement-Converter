@@ -4,7 +4,7 @@ import { parseEuropeanNumber } from "../utils/number-parser";
 
 export function processAmexDataFixed(
   data: string[][],
-  config: BankConfig
+  config: BankConfig,
 ): StandardizedTransaction[] {
   const results: StandardizedTransaction[] = [];
   const errors: string[] = [];
@@ -18,7 +18,7 @@ export function processAmexDataFixed(
   data.slice(0, 3).forEach((row, i) => {
     console.log(
       `Row ${i + 1}: [${row.length} cols]`,
-      row.map((col) => `"${col}"`)
+      row.map((col) => `"${col}"`),
     );
   });
 
@@ -61,7 +61,7 @@ export function processAmexDataFixed(
         // If all fail, create a valid date from the string
         if (!convertedDate && dateStr.match(/\d/)) {
           console.warn(
-            `Row ${i + 1}: Using fallback date parsing for "${dateStr}"`
+            `Row ${i + 1}: Using fallback date parsing for "${dateStr}"`,
           );
           convertedDate = "2025-01-01"; // Use a default date to avoid losing the transaction
         }
@@ -147,8 +147,8 @@ export function processAmexDataFixed(
             i + 1
           }: ✅ PROCESSED - Date: "${finalDate}", Desc: "${finalDescription.substring(
             0,
-            30
-          )}", D: ${debitAmount}, C: ${creditAmount}`
+            30,
+          )}", D: ${debitAmount}, C: ${creditAmount}`,
         );
       }
     } catch (error) {
@@ -173,7 +173,7 @@ export function processAmexDataFixed(
 
   // Sort by date
   results.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 
   console.log(`\n=== AMEX PROCESSING SUMMARY (FIXED) ===`);
@@ -182,7 +182,7 @@ export function processAmexDataFixed(
   console.log(`Skipped rows: ${skipped.length}`);
   console.log(`Errors: ${errors.length}`);
   console.log(
-    `Success rate: ${((results.length / data.length) * 100).toFixed(1)}%`
+    `Success rate: ${((results.length / data.length) * 100).toFixed(1)}%`,
   );
 
   if (skipped.length > 0) {

@@ -1,18 +1,25 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface CSVPreviewProps {
-  rawData: string[][]
-  separator: string
+  rawData: string[][];
+  separator: string;
 }
 
 export function CSVPreview({ rawData, separator }: CSVPreviewProps) {
-  if (rawData.length === 0) return null
+  if (rawData.length === 0) return null;
 
-  const maxColumns = Math.max(...rawData.slice(0, 10).map((row) => row.length))
+  const maxColumns = Math.max(...rawData.slice(0, 10).map((row) => row.length));
 
   return (
     <Card>
@@ -29,7 +36,10 @@ export function CSVPreview({ rawData, separator }: CSVPreviewProps) {
               <TableRow>
                 <TableHead className="sticky top-0 bg-white w-12">#</TableHead>
                 {Array.from({ length: maxColumns }, (_, i) => (
-                  <TableHead key={i} className="sticky top-0 bg-white text-xs min-w-24">
+                  <TableHead
+                    key={i}
+                    className="sticky top-0 bg-white text-xs min-w-24"
+                  >
                     {String.fromCharCode(65 + i)} ({i})
                   </TableHead>
                 ))}
@@ -38,7 +48,9 @@ export function CSVPreview({ rawData, separator }: CSVPreviewProps) {
             <TableBody>
               {rawData.slice(0, 10).map((row, rowIndex) => (
                 <TableRow key={rowIndex}>
-                  <TableCell className="font-mono text-xs">{rowIndex + 1}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {rowIndex + 1}
+                  </TableCell>
                   {Array.from({ length: maxColumns }, (_, colIndex) => (
                     <TableCell key={colIndex} className="text-xs max-w-32">
                       <div className="truncate" title={row[colIndex] || ""}>
@@ -51,8 +63,10 @@ export function CSVPreview({ rawData, separator }: CSVPreviewProps) {
             </TableBody>
           </Table>
         </div>
-        <p className="text-sm text-gray-500 mt-2">Showing first 10 rows. Total columns detected: {maxColumns}</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Showing first 10 rows. Total columns detected: {maxColumns}
+        </p>
       </CardContent>
     </Card>
-  )
+  );
 }
