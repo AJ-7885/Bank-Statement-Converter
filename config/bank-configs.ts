@@ -1,30 +1,30 @@
-import type { BankConfig } from "../types"
-import { processPostbankData } from "../processors/postbank-processor"
-import { processAmexDataFixed } from "../processors/amex-processor-fixed"
-import { processRevolutData } from "../processors/revolut-processor"
-import { convertDateToStandard } from "../utils/date-parser"
-import { parseEuropeanNumber } from "../utils/number-parser"
+import type { BankConfig } from "../types";
+import { processPostbankData } from "../processors/postbank-processor";
+import { processAmexDataFixed } from "../processors/amex-processor-fixed";
+import { processRevolutData } from "../processors/revolut-processor";
+import { convertDateToStandard } from "../utils/date-parser";
+import { parseEuropeanNumber } from "../utils/number-parser";
 
 // Generic processor for other banks
 function genericProcessor(data: string[][], config: BankConfig) {
-  const results = []
+  const results = [];
 
   for (let i = 0; i < data.length; i++) {
-    const row = data[i]
-    if (!row || row.length === 0) continue
+    const row = data[i];
+    if (!row || row.length === 0) continue;
 
     try {
-      const dateStr = row[config.dateColumn] || ""
-      const convertedDate = convertDateToStandard(dateStr, config.dateFormat)
+      const dateStr = row[config.dateColumn] || "";
+      const convertedDate = convertDateToStandard(dateStr, config.dateFormat);
 
       const description = config.descriptionColumns
         .map((colIndex) => row[colIndex] || "")
         .filter((text) => text.trim() !== "")
         .join(" ")
-        .trim()
+        .trim();
 
-      const debitAmount = parseEuropeanNumber(row[config.debitColumn] || "")
-      const creditAmount = parseEuropeanNumber(row[config.creditColumn] || "")
+      const debitAmount = parseEuropeanNumber(row[config.debitColumn] || "");
+      const creditAmount = parseEuropeanNumber(row[config.creditColumn] || "");
 
       results.push({
         date: convertedDate,
@@ -34,13 +34,15 @@ function genericProcessor(data: string[][], config: BankConfig) {
         qty: "",
         debitUnit: debitAmount,
         creditUnit: creditAmount,
-      })
+      });
     } catch (error) {
-      console.warn(`Error processing row ${i}:`, error)
+      console.warn(`Error processing row ${i}:`, error);
     }
   }
 
-  return results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  return results.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 }
 
 export const bankConfigs: Record<string, BankConfig> = {
@@ -58,11 +60,11 @@ export const bankConfigs: Record<string, BankConfig> = {
   },
   amex: {
     name: "American Express",
-    dateFormat: "DD/MM/YYYY", // German format with intelligent detection
-    skipRows: 1,
+    dateFormat: "DD/MM/YYYY", // German format: 02/01/2025 = 2nd January
+    skipRows: 1, // Skip header row
     removeLastRows: 0,
     dateColumn: 0, // A: Datum
-    descriptionColumns: [1, 6, 7], // B: Beschreibung, G: Statement, H: Address
+    descriptionColumns: [1, 6], // B: Beschreibung, G: Erscheint auf Ihrer Abrechnung als
     debitColumn: 4, // E: Betrag
     creditColumn: 4, // E: Betrag (same column, logic in processor)
     columnsToIgnore: [],
@@ -104,4 +106,4 @@ export const bankConfigs: Record<string, BankConfig> = {
     columnsToIgnore: [],
     processor: genericProcessor,
   },
-}
+};

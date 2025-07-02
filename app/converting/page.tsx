@@ -1,8 +1,5 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,507 +8,555 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle,
+  Upload,
+  Download,
+  FileText,
+  Zap,
+  Shield,
+  BarChart3,
+  Clock,
+  Users,
+  Star,
+  Info,
+  AlertTriangle,
+} from "lucide-react";
 import Link from "next/link";
 
-import { bankConfigs } from "@/config/bank-configs";
-import { parseCSV, convertToCSV, detectSeparator } from "@/utils/csv-processor";
-import { ProcessingMonitor } from "@/components/processing-monitor";
-import { ConversionSummary } from "@/components/conversion-summary";
-import { DataTable } from "@/components/data-table";
-import { CSVPreview } from "@/components/csv-preview";
-import { ProcessingSummary } from "@/components/processing-summary";
-import { BankSpecificInfo } from "@/components/bank-specific-info";
-import { AmexDebugPreview } from "@/components/amex-debug-preview";
-import type { ProcessingStep, ConversionResult } from "@/types";
-
-export default function BankStatementConverter() {
-  const [selectedBank, setSelectedBank] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([]);
-  const [conversionResult, setConversionResult] =
-    useState<ConversionResult | null>(null);
-  const [rawData, setRawData] = useState<string[][]>([]);
-  const [detectedSeparator, setDetectedSeparator] = useState<string>("");
-  const [inputRowCount, setInputRowCount] = useState<number>(0);
-  const [error, setError] = useState<string>("");
-
-  const initializeSteps = (bankKey: string): ProcessingStep[] => {
-    const config = bankConfigs[bankKey];
-    const bankSpecificSteps = {
-      postbank: [
-        {
-          step: 1,
-          description: `Parse CSV with detected separator`,
-          status: "pending" as const,
-        },
-        {
-          step: 2,
-          description: `Remove first ${config.skipRows} header rows`,
-          status: "pending" as const,
-        },
-        {
-          step: 3,
-          description: "Convert date formats to YYYY-MM-DD",
-          status: "pending" as const,
-        },
-        {
-          step: 4,
-          description: "Merge description columns (C to O)",
-          status: "pending" as const,
-        },
-        {
-          step: 5,
-          description: "Map Column P(15) → D-Unit, Column Q(16) → C-Unit",
-          status: "pending" as const,
-        },
-        {
-          step: 6,
-          description: "Remove last row(s) if needed",
-          status: "pending" as const,
-        },
-        {
-          step: 7,
-          description: "Sort transactions by date (oldest to newest)",
-          status: "pending" as const,
-        },
-        {
-          step: 8,
-          description: "Generate standardized CSV format",
-          status: "pending" as const,
-        },
+export default function LandingPage() {
+  const supportedBanks = [
+    {
+      name: "Postbank",
+      description: "German bank statements with custom date formats",
+      features: [
+        "Date: D.M.YYYY format",
+        "Description merging",
+        "Debit/Credit separation",
       ],
-      amex: [
-        {
-          step: 1,
-          description: `Parse CSV with detected separator`,
-          status: "pending" as const,
-        },
-        {
-          step: 2,
-          description: `Remove first ${config.skipRows} header rows`,
-          status: "pending" as const,
-        },
-        {
-          step: 3,
-          description: "Convert date from Column A to YYYY-MM-DD",
-          status: "pending" as const,
-        },
-        {
-          step: 4,
-          description: "Merge description columns G + H",
-          status: "pending" as const,
-        },
-        {
-          step: 5,
-          description: "Process Column E: Negative → C-Unit, Positive → D-Unit",
-          status: "pending" as const,
-        },
-        {
-          step: 6,
-          description: "Sort transactions by date (oldest to newest)",
-          status: "pending" as const,
-        },
-        {
-          step: 7,
-          description: "Generate standardized CSV format",
-          status: "pending" as const,
-        },
+      complexity: "Advanced",
+    },
+    {
+      name: "American Express",
+      description: "Credit card statements with European formatting",
+      features: [
+        "Date: DD/MM/YYYY format",
+        "Amount categorization",
+        "Multi-column descriptions",
       ],
-      revolut: [
-        {
-          step: 1,
-          description: `Parse CSV with detected separator`,
-          status: "pending" as const,
-        },
-        {
-          step: 2,
-          description: `Remove first ${config.skipRows} header rows`,
-          status: "pending" as const,
-        },
-        {
-          step: 3,
-          description: "Extract date from Column C (remove time)",
-          status: "pending" as const,
-        },
-        {
-          step: 4,
-          description: "Use Column E for description",
-          status: "pending" as const,
-        },
-        {
-          step: 5,
-          description: "Process Column F: Positive → C-Unit, Negative → D-Unit",
-          status: "pending" as const,
-        },
-        {
-          step: 6,
-          description: "Sort transactions by date (oldest to newest)",
-          status: "pending" as const,
-        },
-        {
-          step: 7,
-          description: "Generate standardized CSV format",
-          status: "pending" as const,
-        },
+      complexity: "Complex",
+    },
+    {
+      name: "Revolut",
+      description: "Digital bank statements with timestamp handling",
+      features: [
+        "Timestamp removal",
+        "Simple format",
+        "Positive/Negative logic",
       ],
-    };
+      complexity: "Simple",
+    },
+    {
+      name: "ING Bank",
+      description: "International bank statements",
+      features: [
+        "Standard format",
+        "Multi-column support",
+        "Date normalization",
+      ],
+      complexity: "Medium",
+    },
+    {
+      name: "N26",
+      description: "Digital bank statements",
+      features: ["Modern format", "Clean data", "Minimal processing"],
+      complexity: "Simple",
+    },
+  ];
 
-    return (
-      bankSpecificSteps[bankKey as keyof typeof bankSpecificSteps] || [
-        {
-          step: 1,
-          description: `Parse CSV with detected separator`,
-          status: "pending" as const,
-        },
-        {
-          step: 2,
-          description: `Remove first ${config.skipRows} header rows`,
-          status: "pending" as const,
-        },
-        {
-          step: 3,
-          description: "Process transactions",
-          status: "pending" as const,
-        },
-        {
-          step: 4,
-          description: "Generate standardized CSV format",
-          status: "pending" as const,
-        },
-      ]
-    );
-  };
+  const processingSteps = [
+    {
+      step: 1,
+      title: "Upload Your File",
+      description: "Select your bank and upload the CSV statement file",
+      icon: Upload,
+    },
+    {
+      step: 2,
+      title: "Automatic Processing",
+      description:
+        "Our system detects format and processes your data intelligently",
+      icon: Zap,
+    },
+    {
+      step: 3,
+      title: "Review Results",
+      description: "Preview converted data and verify accuracy",
+      icon: BarChart3,
+    },
+    {
+      step: 4,
+      title: "Download CSV",
+      description: "Get your standardized CSV file ready for Google Sheets",
+      icon: Download,
+    },
+  ];
 
-  const updateStep = (
-    stepNumber: number,
-    status: ProcessingStep["status"],
-    details?: string
-  ) => {
-    setProcessingSteps((prev) =>
-      prev.map((step) =>
-        step.step === stepNumber ? { ...step, status, details } : step
-      )
-    );
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = event.target.files?.[0];
-    if (uploadedFile) {
-      setFile(uploadedFile);
-      setError("");
-      setConversionResult(null);
-      setProcessingSteps([]);
-      setRawData([]);
-      setDetectedSeparator("");
-      setInputRowCount(0);
-    }
-  };
-
-  const processFile = async () => {
-    if (!file || !selectedBank) return;
-
-    setIsProcessing(true);
-    setError("");
-    setConversionResult(null);
-
-    const steps = initializeSteps(selectedBank);
-    setProcessingSteps(steps);
-
-    try {
-      const config = bankConfigs[selectedBank];
-      const fileText = await file.text();
-
-      // Step 1: Parse CSV
-      updateStep(1, "processing");
-
-      // Detect separator
-      const separator = detectSeparator(fileText);
-      setDetectedSeparator(separator);
-      console.log(`Detected CSV separator: "${separator}"`);
-
-      const csvData = parseCSV(fileText, separator);
-      setRawData(csvData);
-
-      updateStep(
-        1,
-        "completed",
-        `Detected "${separator}" separator, parsed ${csvData.length} rows`
-      );
-
-      if (csvData.length <= config.skipRows) {
-        throw new Error(
-          `File has insufficient data. Expected more than ${config.skipRows} rows, got ${csvData.length}`
-        );
-      }
-
-      // Step 2: Remove header rows
-      updateStep(2, "processing");
-      const dataWithoutHeaders = csvData.slice(config.skipRows);
-      setInputRowCount(dataWithoutHeaders.length);
-      updateStep(
-        2,
-        "completed",
-        `Removed ${config.skipRows} header rows, ${dataWithoutHeaders.length} data rows remaining`
-      );
-
-      // Remove last rows if needed (mainly for Postbank)
-      const cleanedData =
-        config.removeLastRows > 0
-          ? dataWithoutHeaders.slice(0, -config.removeLastRows)
-          : dataWithoutHeaders;
-
-      // Process data using bank-specific processor
-      const nextStep =
-        selectedBank === "postbank" ? 3 : selectedBank === "amex" ? 3 : 3;
-      updateStep(nextStep, "processing");
-
-      const processedData = config.processor(cleanedData, config);
-
-      // Update remaining steps
-      const totalSteps = steps.length;
-      for (let i = nextStep; i < totalSteps - 1; i++) {
-        updateStep(i, "completed");
-      }
-
-      // Final step
-      updateStep(totalSteps - 1, "processing");
-
-      if (processedData.length === 0) {
-        throw new Error("No valid transactions found in the file");
-      }
-
-      // Calculate summary
-      const totalDebits = processedData.reduce(
-        (sum, t) => sum + (t.debitUnit || 0),
-        0
-      );
-      const totalCredits = processedData.reduce(
-        (sum, t) => sum + (t.creditUnit || 0),
-        0
-      );
-      const dates = processedData
-        .map((t) => t.date)
-        .filter((d) => d)
-        .sort();
-
-      const result: ConversionResult = {
-        success: true,
-        data: processedData,
-        errors: [],
-        warnings: [],
-        summary: {
-          totalTransactions: processedData.length,
-          totalDebits,
-          totalCredits,
-          dateRange: {
-            from: dates[0] || "",
-            to: dates[dates.length - 1] || "",
-          },
-        },
-      };
-
-      setConversionResult(result);
-      updateStep(
-        totalSteps - 1,
-        "completed",
-        `Generated CSV with ${processedData.length} transactions`
-      );
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      setError(errorMessage);
-
-      setProcessingSteps((prev) =>
-        prev.map((step) =>
-          step.status === "processing"
-            ? { ...step, status: "error", details: errorMessage }
-            : step
-        )
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const downloadCSV = () => {
-    if (!conversionResult?.data.length) return;
-
-    const csv = convertToCSV(conversionResult.data);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `converted_${selectedBank}_${
-      new Date().toISOString().split("T")[0]
-    }.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  const features = [
+    {
+      icon: Shield,
+      title: "Secure Processing",
+      description:
+        "All processing happens in your browser. Your data never leaves your device.",
+    },
+    {
+      icon: Zap,
+      title: "Smart Detection",
+      description:
+        "Automatically detects CSV format, separators, and bank-specific structures.",
+    },
+    {
+      icon: FileText,
+      title: "Standardized Output",
+      description:
+        "Converts all formats to a unified CSV structure compatible with Google Sheets.",
+    },
+    {
+      icon: BarChart3,
+      title: "Data Analysis",
+      description:
+        "Built-in analysis tools to verify conversion accuracy and identify issues.",
+    },
+    {
+      icon: Clock,
+      title: "Real-time Processing",
+      description:
+        "Watch your data being processed with live progress monitoring.",
+    },
+    {
+      icon: Users,
+      title: "Multi-Bank Support",
+      description:
+        "Works with 5+ major banks, each with custom processing logic.",
+    },
+  ];
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header with Back Button */}
-      <div className="mb-8">
-        <Link
-          href="/"
-          className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Guide
-        </Link>
-        <h1 className="text-4xl font-bold mb-4">Bank Statement Converter</h1>
-        <p className="text-lg text-muted-foreground">
-          Convert bank statements from multiple banks into standardized CSV
-          format for Google Sheets
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Hero Section */}
+      <div className="container mx-auto px-6 pt-16 pb-24">
+        <div className="text-center max-w-4xl mx-auto">
+          <Badge variant="outline" className="mb-4 px-4 py-2">
+            <Star className="h-4 w-4 mr-2" />
+            Trusted by Financial Professionals
+          </Badge>
+
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Bank Statement Converter
+          </h1>
+
+          <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+            Transform bank statements from multiple banks into a standardized
+            CSV format compatible with Google Sheets and Excel in seconds.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Link href="/converter">
+              <Button size="lg" className="px-8 py-4 text-lg">
+                Start Converting Now
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="lg"
+              className="px-8 py-4 text-lg bg-transparent"
+            >
+              View Demo
+            </Button>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">5+</div>
+              <div className="text-gray-600">Supported Banks</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600">100%</div>
+              <div className="text-gray-600">Client-Side Processing</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-purple-600">Instant</div>
+              <div className="text-gray-600">Conversion Speed</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-3 mb-8">
-        {/* Upload Section */}
-        <div className="lg:col-span-2">
-          <Card>
+      {/* How It Works Section */}
+      <div className="bg-white py-24">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Convert your bank statements in 4 simple steps. No registration
+              required.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {processingSteps.map((step) => (
+              <Card
+                key={step.step}
+                className="text-center hover:shadow-lg transition-shadow"
+              >
+                <CardHeader>
+                  <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <step.icon className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <CardTitle className="text-lg">
+                    Step {step.step}: {step.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{step.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Supported Banks Section */}
+      <div className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Supported Banks</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Each bank has custom processing logic to ensure accurate data
+              conversion.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {supportedBanks.map((bank) => (
+              <Card
+                key={bank.name}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{bank.name}</CardTitle>
+                    <Badge
+                      variant={
+                        bank.complexity === "Simple"
+                          ? "default"
+                          : bank.complexity === "Medium"
+                          ? "secondary"
+                          : bank.complexity === "Advanced"
+                          ? "outline"
+                          : "destructive"
+                      }
+                    >
+                      {bank.complexity}
+                    </Badge>
+                  </div>
+                  <CardDescription>{bank.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {bank.features.map((feature, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center text-sm text-gray-600"
+                      >
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-24 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Powerful Features</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Built with advanced processing capabilities and user-friendly
+              design.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature) => (
+              <div key={feature.title} className="text-center">
+                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mb-4">
+                  <feature.icon className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Output Format Section */}
+      <div className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Standardized Output Format
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              All bank statements are converted to this unified CSV format.
+            </p>
+          </div>
+
+          <Card className="max-w-4xl mx-auto">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Upload Bank Statement
+                <FileText className="h-5 w-5" />
+                CSV Output Structure
               </CardTitle>
               <CardDescription>
-                Select your bank and upload the CSV statement file for
-                conversion
+                Compatible with Google Sheets, Excel, and other spreadsheet
+                applications
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="bank-select">Select Bank</Label>
-                  <Select value={selectedBank} onValueChange={setSelectedBank}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose your bank" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(bankConfigs).map(([key, config]) => (
-                        <SelectItem key={key} value={key}>
-                          {config.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="file-upload">Upload CSV File</Label>
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    accept=".csv,.txt"
-                    onChange={handleFileUpload}
-                  />
-                </div>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 px-4 py-2 text-left">
+                        Column
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left">
+                        Description
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left">
+                        Example
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        Date
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        Transaction date (YYYY-MM-DD)
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        2025-01-15
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50">
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        Category
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        Transaction category (empty)
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-gray-500">
+                        NULL
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        Description
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        Transaction description
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        ROSSMANN BERLIN
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50">
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        Reference No.
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        Reference number (empty)
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-gray-500">
+                        NULL
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        QTY
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        Quantity (empty)
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 text-gray-500">
+                        NULL
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50">
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        D- Unit
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        Debit amount (money in)
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 font-mono text-green-600">
+                        1250.00
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-4 py-2 font-mono">
+                        C- Unit
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        Credit amount (money out)
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2 font-mono text-red-600">
+                        45.67
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-
-              <Button
-                onClick={processFile}
-                disabled={!file || !selectedBank || isProcessing}
-                className="w-full"
-                size="lg"
-              >
-                {isProcessing ? "Converting..." : "Convert Statement"}
-              </Button>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {conversionResult?.success && (
-                <Alert>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Conversion completed! {inputRowCount} input rows →{" "}
-                    {conversionResult.data.length} transactions
-                  </AlertDescription>
-                </Alert>
-              )}
             </CardContent>
           </Card>
         </div>
+      </div>
 
-        {/* Bank-Specific Info */}
-        <div>
-          <BankSpecificInfo selectedBank={selectedBank} />
+      {/* Important Notes Section */}
+      <div className="py-24 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Important Information</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Please read these important notes before using the converter.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <Alert>
+              <Shield className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Privacy & Security:</strong> All processing happens in
+                your browser. Your bank data never leaves your device and is not
+                stored anywhere.
+              </AlertDescription>
+            </Alert>
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>File Format:</strong> Upload CSV files exported directly
+                from your bank. Make sure the file is in the original format
+                without modifications.
+              </AlertDescription>
+            </Alert>
+
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Accuracy:</strong> The converter processes data
+                intelligently but always review the output before using it for
+                financial analysis.
+              </AlertDescription>
+            </Alert>
+
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Backup:</strong> Always keep a backup of your original
+                bank statement files before conversion.
+              </AlertDescription>
+            </Alert>
+          </div>
         </div>
       </div>
 
-      {/* Processing Summary */}
-      {inputRowCount > 0 && conversionResult && (
-        <div className="mb-8">
-          <ProcessingSummary
-            inputRows={inputRowCount}
-            outputRows={conversionResult.data.length}
-            skippedRows={[]}
-            errors={[]}
-          />
-        </div>
-      )}
+      {/* CTA Section */}
+      <div className="py-24 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl font-bold mb-4">
+            Ready to Convert Your Bank Statements?
+          </h2>
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            Join thousands of users who trust our converter for their financial
+            data processing needs.
+          </p>
 
-      {/* CSV Structure Preview */}
-      {rawData.length > 0 && detectedSeparator && (
-        <div className="mb-8">
-          <CSVPreview rawData={rawData} separator={detectedSeparator} />
-        </div>
-      )}
-
-      {/* Amex-Specific Debug */}
-      {selectedBank === "amex" &&
-        rawData.length > 0 &&
-        conversionResult?.data && (
-          <div className="mb-8">
-            <AmexDebugPreview
-              rawData={rawData}
-              processedData={conversionResult.data}
-            />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/converter">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="px-8 py-4 text-lg"
+              >
+                Start Converting Now
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Button
+              size="lg"
+              variant="outline"
+              className="px-8 py-4 text-lg border-white text-white hover:bg-white hover:text-blue-600 bg-transparent"
+            >
+              Learn More
+            </Button>
           </div>
-        )}
-
-      {/* Processing Steps */}
-      {processingSteps.length > 0 && (
-        <div className="mb-8">
-          <ProcessingMonitor
-            steps={processingSteps}
-            isProcessing={isProcessing}
-          />
         </div>
-      )}
+      </div>
 
-      {/* Conversion Summary */}
-      {conversionResult && (
-        <div className="mb-8">
-          <ConversionSummary result={conversionResult} />
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">
+                Bank Statement Converter
+              </h3>
+              <p className="text-gray-400">
+                Secure, fast, and reliable bank statement conversion for
+                financial professionals.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Supported Banks</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Postbank</li>
+                <li>American Express</li>
+                <li>Revolut</li>
+                <li>ING Bank</li>
+                <li>N26</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Features</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Client-side processing</li>
+                <li>Real-time conversion</li>
+                <li>Data analysis tools</li>
+                <li>Multiple format support</li>
+                <li>Google Sheets compatible</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2025 Bank Statement Converter. All rights reserved.</p>
+          </div>
         </div>
-      )}
-
-      {/* Data Preview */}
-      {conversionResult?.data && (
-        <DataTable data={conversionResult.data} onDownload={downloadCSV} />
-      )}
+      </footer>
     </div>
   );
 }
