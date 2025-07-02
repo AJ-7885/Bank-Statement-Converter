@@ -115,11 +115,12 @@ export function processAmexDataFixed(
             const isNegative = amountStr.includes("-");
 
             if (isNegative) {
-              // Negative amount = refund/credit = D-Unit (money coming in)
-              debitAmount = parsedAmount;
-            } else {
-              // Positive amount = expense = C-Unit (money going out)
+              // Negative amount = refund/credit = C-Unit (money going in)
               creditAmount = parsedAmount;
+            } else {
+              // Positive amount = expense = C-Unit D-Unit (money coming out)
+
+              debitAmount = parsedAmount;
             }
           }
         }
