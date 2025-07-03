@@ -134,7 +134,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <span className="font-bold text-xl text-indigo-600">
-                FinanceFlow
+                Bank Statements Converter
               </span>
             </div>
             <div className="hidden md:block">
